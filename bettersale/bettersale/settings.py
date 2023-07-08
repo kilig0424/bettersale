@@ -30,12 +30,22 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# SESSION_COOKIE_AGE。这是一个表示会话超时时间的秒数。
+# 当用户在这段时间内没有任何活动（即没有发送任何请求）时，Django会自动结束会话。
+SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
+
+# 如果你想让会话在固定的时间后超时，不论用户是否在活动，你可以添加以下设置：
+# SESSION_SAVE_EVERY_REQUEST = True
+
+
+
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'suit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +53,34 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'rest_framework'
 ]
+
+SUIT_CONFIG = {
+   # header
+   'ADMIN_NAME': 'Django Suit',
+   'HEADER_DATE_FORMAT': 'l, j. F Y',
+   'HEADER_TIME_FORMAT': 'H:i',
+
+   # forms
+   'SHOW_REQUIRED_ASTERISK': True,  # Default True
+   'CONFIRM_UNSAVED_CHANGES': True, # Default True
+
+   # menu
+   'SEARCH_URL': '/admin/auth/user/',
+   'MENU_ICONS': {
+      'auth': 'icon-lock',
+      'auth.user': 'icon-user',
+   },
+   'MENU_OPEN_FIRST_CHILD': True, # Default True
+   'MENU_EXCLUDE': ('auth.group',),
+   'MENU': (
+       'sites',
+       {'app': 'auth', 'icon':'icon-lock', 'models': ('user', 'group')},
+       {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
+       {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
+   ),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -110,6 +147,16 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# 如果你希望所有的视图都需要用户认证，你可以在你的settings.py文件中添加以下设置：
+# 如果你有一些视图不需要用户认证，你可以在这些视图中设置:
+# from rest_framework.permissions import IsAuthenticated, AllowAny
+# permission_classes=[AllowAny]
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
 
 
 AUTH_USER_MODEL = 'users.User'

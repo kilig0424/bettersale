@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, EmailVerification, MembershipStatusView
-from .views import RegisterView, login_view, logout_view, UserDetail, change_password
+# from .views import UserViewSet, EmailVerification,
+from .views import RegisterView, login_view, logout_view, UserDetail, change_password, MembershipStatusView, UserViewSet
 
 # 创建一个DefaultRouter实例
 router = DefaultRouter()
@@ -23,7 +23,7 @@ urlpatterns = [
     # 修改密码
     path('user/<int:pk>/change_password/', change_password, name='change_password'),
     # 验证绑定邮箱
-    path('user/<int:pk>/verify_email/', EmailVerification.as_view(), name='verify_email'),
+    # path('user/<int:pk>/verify_email/', EmailVerification.as_view(), name='verify_email'),
     # 判断会员状态
     path('membership_status/', MembershipStatusView.as_view(), name='membership_status'),
 

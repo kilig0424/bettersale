@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+http://localhost:63342/bettersale/templates/test.html?_ijt=q0hcf0csdt99dgdo56jqcfpncu
+<body>
+    <form action="user/<int:pk>/" method="post">
+  {% csrf_token %}
+
+  <input type="text" name="display_name">
+  <button type="submit">Submit</button>
+</form>
+</body>
+</html>

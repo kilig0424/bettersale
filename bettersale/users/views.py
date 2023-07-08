@@ -10,9 +10,9 @@ import json
 from django.contrib.auth import logout
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from bettersale.settings import DEFAULT_FROM_EMAIL
-from payments.models import Card
+# from payments.models import Card
 from .models import User, UserSession
 from .serializers import UserSerializer, MembershipSerializer
 from rest_framework import status
@@ -35,6 +35,7 @@ from .models import Membership
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
     authentication_classes = [SessionAuthentication]
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
@@ -85,12 +86,15 @@ def logout_view(request):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserDetail(APIView):
-    @csrf_exempt
     def get(self, request, pk):
         try:
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+            # 检查请求的用户是否与要访问的用户相匹配
+        if request.user != user:
+            return JsonResponse({'status': 'error', 'message': 'You do not have permission to access this user'},
+                                status=403)
         serializer = UserSerializer(user)
         return JsonResponse(serializer.data)
 
@@ -142,50 +146,6 @@ def change_password(request, pk):
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
-
-@method_decorator(csrf_exempt, name='dispatch')
-class EmailVerification(APIView):
-    #  生成验证码，保存到数据库，并发送到用户的邮箱
-    def post(self, request, pk):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
-        data = json.loads(request.body)
-        email = data.get('email')
-        if email is None:
-            return JsonResponse({'status': 'error', 'message': 'Email is required'}, status=400)
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({'status': 'error', 'message': 'Email already in use'}, status=400)
-        code = random.randint(100000, 999999)
-        EmailVerificationCode.objects.create(code=code, email=email, expires_at=timezone.now() + timedelta(minutes=10))
-        send_mail(
-            'Your verification code',
-            'Your verification code is: ' + str(code),
-            'kilig@bettersale.cn',
-            [email],
-            fail_silently=False,
-        )
-        return JsonResponse({'status': 'success'})
-
-    # 处理PUT请求，验证用户输入的验证码是否正确。
-    def put(self, request, pk):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
-        email = request.POST.get('email')
-        code = request.POST.get('code')
-        try:
-            verification_code = EmailVerificationCode.objects.get(code=code, email=email)
-        except EmailVerificationCode.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Invalid verification code'}, status=400)
-        if timezone.now() > verification_code.expires_at:
-            return JsonResponse({'status': 'error', 'message': 'Verification code expired'}, status=400)
-        user.email = email
-        user.save()
-        verification_code.delete()
-        return JsonResponse({'status': 'success'})
 
 
 # 获取用户的会员状态

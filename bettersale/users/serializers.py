@@ -14,6 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'phone_number', 'is_active',
                   'is_staff', 'date_joined', 'display_name', 'password', 'security_question']
+        # email、phone_number、is_active、is_staff、date_joined、display_name和security_question字段都被设置为只读。
+        # 这样，当你在POST请求中包含这些字段时，它们将被忽略，不会被用于创建新的用户。
+        read_only_fields = ['email', 'phone_number', 'is_active',
+                            'is_staff', 'date_joined', 'display_name', 'security_question']
 
     # 验证password字段的方法
     @staticmethod
