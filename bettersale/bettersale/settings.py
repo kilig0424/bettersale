@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'shops',
     'payments',
+    'data_collection'
 ]
 
 SUIT_CONFIG = {
